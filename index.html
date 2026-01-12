@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SJCleanup API Tester</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --accent-cyan: #00f0ff;
+            --accent-magenta: #ff00aa;
+            --accent-green: #00ff88;
+            --accent-orange: #ff8800;
+            --text-primary: #ffffff;
+            --text-secondary: #8888aa;
+            --border-color: #2a2a3a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(ellipse at 20% 20%, rgba(0, 240, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(255, 0, 170, 0.08) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: -2px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .api-groups {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .api-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out backwards;
+        }
+
+        .api-card:nth-child(1) { animation-delay: 0.1s; }
+        .api-card:nth-child(2) { animation-delay: 0.2s; }
+        .api-card:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .api-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .api-card.products::before { background: linear-gradient(90deg, var(--accent-cyan), transparent); }
+        .api-card.employees::before { background: linear-gradient(90deg, var(--accent-magenta), transparent); }
+        .api-card.orders::before { background: linear-gradient(90deg, var(--accent-green), transparent); }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .products .card-icon { background: rgba(0, 240, 255, 0.15); }
+        .employees .card-icon { background: rgba(255, 0, 170, 0.15); }
+        .orders .card-icon { background: rgba(0, 255, 136, 0.15); }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .endpoint-group {
+            margin-bottom: 20px;
+        }
+
+        .endpoint-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .method-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.7rem;
+        }
+
+        .method-badge.get { background: rgba(0, 255, 136, 0.2); color: var(--accent-green); }
+        .method-badge.post { background: rgba(255, 136, 0, 0.2); color: var(--accent-orange); }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input, select {
+            flex: 1;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.1);
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), #00c8d4);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 240, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .response-area {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .response-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.success { background: rgba(0, 255, 136, 0.2); color: var(--accent-green); }
+        .status-badge.error { background: rgba(255, 68, 68, 0.2); color: #ff4444; }
+        .status-badge.loading { background: rgba(0, 240, 255, 0.2); color: var(--accent-cyan); }
+
+        .response-body {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: var(--text-secondary);
+        }
+
+        .response-body .key { color: var(--accent-cyan); }
+        .response-body .string { color: var(--accent-green); }
+        .response-body .number { color: var(--accent-orange); }
+        .response-body .boolean { color: var(--accent-magenta); }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .data-table th, .data-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+
+        .data-table th {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table tr:hover td {
+            background: rgba(0, 240, 255, 0.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .api-groups {
+                grid-template-columns: 1fr;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">SJCleanup</div>
+            <p class="subtitle">Xano API Testing Dashboard • Built with Claude + MCP Connector</p>
+        </header>
+
+        <div class="api-groups">
+            <!-- Test A: Products -->
+            <div class="api-card products">
+                <div class="card-header">
+                    <div class="card-icon">📦</div>
+                    <div>
+                        <div class="card-title">Test A: Products</div>
+                        <div class="card-subtitle">test_1 table</div>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="endpoint-label">
+                        <span class="method-badge get">GET</span>
+                        /products
+                    </div>
+                    <button class="btn-primary" onclick="fetchProducts()">
+                        Fetch All Products
+                    </button>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="endpoint-label">
+                        <span class="method-badge post">POST</span>
+                        /products
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="product-name" placeholder="Product name">
+                        <input type="number" id="product-price" placeholder="Price" step="0.01">
+                    </div>
+                    <button class="btn-primary" onclick="createProduct()">
+                        Create Product
+                    </button>
+                </div>
+
+                <div class="response-area" id="products-response">
+                    <div class="empty-state">Click a button to test the API</div>
+                </div>
+            </div>
+
+            <!-- Test B: Employees -->
+            <div class="api-card employees">
+                <div class="card-header">
+                    <div class="card-icon">👥</div>
+                    <div>
+                        <div class="card-title">Test B: Employees</div>
+                        <div class="card-subtitle">test_2 table</div>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="endpoint-label">
+                        <span class="method-badge get">GET</span>
+                        /employees
+                    </div>
+                    <button class="btn-primary" onclick="fetchEmployees()">
+                        Fetch All Employees
+                    </button>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="endpoint-label">
+                        <span class="method-badge get">GET</span>
+                        /employees/by-department
+                    </div>
+                    <div class="input-group">
+                        <select id="department">
+                            <option value="Engineering">Engineering</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Sales">Sales</option>
+                        </select>
+                        <button class="btn-primary" onclick="fetchByDepartment()">
+                            Filter
+                        </button>
+                    </div>
+                </div>
+
+                <div class="response-area" id="employees-response">
+                    <div class="empty-state">Click a button to test the API</div>
+                </div>
+            </div>
+
+            <!-- Test C: Orders -->
+            <div class="api-card orders">
+                <div class="card-header">
+                    <div class="card-icon">🛒</div>
+                    <div>
+                        <div class="card-title">Test C: Orders</div>
+                        <div class="card-subtitle">test_3 table</div>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="endpoint-label">
+                        <span class="method-badge get">GET</span>
+                        /orders
+                    </div>
+                    <button class="btn-primary" onclick="fetchOrders()">
+                        Fetch All Orders
+                    </button>
+                </div>
+
+                <div class="endpoint-group">
+                    <div class="endpoint-label">
+                        <span class="method-badge get">GET</span>
+                        /orders/by-status
+                    </div>
+                    <div class="input-group">
+                        <select id="order-status">
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                            <option value="shipped">Shipped</option>
+                        </select>
+                        <button class="btn-primary" onclick="fetchByStatus()">
+                            Filter
+                        </button>
+                    </div>
+                </div>
+
+                <div class="response-area" id="orders-response">
+                    <div class="empty-state">Click a button to test the API</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Built by Claude using the <strong>SJCleanup MCP Connector</strong> + <strong>Xano SDK Builder Skill</strong></p>
+            <p style="margin-top: 10px;">
+                <a href="https://keydoor.ai" target="_blank">Key Door</a> • 
+                <a href="https://xano.com" target="_blank">Xano</a> • 
+                <a href="https://anthropic.com" target="_blank">Anthropic</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // API Base URLs
+        const API_BASE = {
+            products: 'https://x8ki-letl-twmt.n7.xano.io/api:kyfGMc2D',
+            employees: 'https://x8ki-letl-twmt.n7.xano.io/api:ii0Bkj8f',
+            orders: 'https://x8ki-letl-twmt.n7.xano.io/api:z_w7ngae'
+        };
+
+        // Helper: Show loading state
+        function showLoading(elementId) {
+            document.getElementById(elementId).innerHTML = `
+                <div class="response-header">
+                    <span class="response-title">Response</span>
+                    <span class="status-badge loading"><span class="loading-spinner"></span> Loading...</span>
+                </div>
+            `;
+        }
+
+        // Helper: Show response
+        function showResponse(elementId, data, success = true) {
+            const formatted = JSON.stringify(data, null, 2)
+                .replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:')
+                .replace(/: "([^"]+)"/g, ': <span class="string">"$1"</span>')
+                .replace(/: (\d+\.?\d*)/g, ': <span class="number">$1</span>')
+                .replace(/: (true|false)/g, ': <span class="boolean">$1</span>');
+
+            document.getElementById(elementId).innerHTML = `
+                <div class="response-header">
+                    <span class="response-title">Response</span>
+                    <span class="status-badge ${success ? 'success' : 'error'}">${success ? '200 OK' : 'Error'}</span>
+                </div>
+                <div class="response-body">${formatted}</div>
+            `;
+        }
+
+        // Helper: Show error
+        function showError(elementId, error) {
+            document.getElementById(elementId).innerHTML = `
+                <div class="response-header">
+                    <span class="response-title">Response</span>
+                    <span class="status-badge error">Error</span>
+                </div>
+                <div class="response-body" style="color: #ff4444;">${error.message || error}</div>
+            `;
+        }
+
+        // Products API
+        async function fetchProducts() {
+            showLoading('products-response');
+            try {
+                const res = await fetch(`${API_BASE.products}/products`);
+                const data = await res.json();
+                showResponse('products-response', data);
+            } catch (err) {
+                showError('products-response', err);
+            }
+        }
+
+        async function createProduct() {
+            const name = document.getElementById('product-name').value;
+            const price = parseFloat(document.getElementById('product-price').value);
+            
+            if (!name || isNaN(price)) {
+                showError('products-response', { message: 'Please enter product name and price' });
+                return;
+            }
+
+            showLoading('products-response');
+            try {
+                const res = await fetch(`${API_BASE.products}/products`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, price, in_stock: true })
+                });
+                const data = await res.json();
+                showResponse('products-response', data);
+                document.getElementById('product-name').value = '';
+                document.getElementById('product-price').value = '';
+            } catch (err) {
+                showError('products-response', err);
+            }
+        }
+
+        // Employees API
+        async function fetchEmployees() {
+            showLoading('employees-response');
+            try {
+                const res = await fetch(`${API_BASE.employees}/employees`);
+                const data = await res.json();
+                showResponse('employees-response', data);
+            } catch (err) {
+                showError('employees-response', err);
+            }
+        }
+
+        async function fetchByDepartment() {
+            const dept = document.getElementById('department').value;
+            showLoading('employees-response');
+            try {
+                const res = await fetch(`${API_BASE.employees}/employees/by-department?department=${encodeURIComponent(dept)}`);
+                const data = await res.json();
+                showResponse('employees-response', data);
+            } catch (err) {
+                showError('employees-response', err);
+            }
+        }
+
+        // Orders API
+        async function fetchOrders() {
+            showLoading('orders-response');
+            try {
+                const res = await fetch(`${API_BASE.orders}/orders`);
+                const data = await res.json();
+                showResponse('orders-response', data);
+            } catch (err) {
+                showError('orders-response', err);
+            }
+        }
+
+        async function fetchByStatus() {
+            const status = document.getElementById('order-status').value;
+            showLoading('orders-response');
+            try {
+                const res = await fetch(`${API_BASE.orders}/orders/by-status?status=${encodeURIComponent(status)}`);
+                const data = await res.json();
+                showResponse('orders-response', data);
+            } catch (err) {
+                showError('orders-response', err);
+            }
+        }
+    </script>
+</body>
+</html>
